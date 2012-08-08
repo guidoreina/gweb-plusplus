@@ -1,0 +1,167 @@
+gweb++ is an asynchronous event-driven web server and reverse proxy which runs under Linux, FreeBSD
+and Opensolaris.
+
+It is written in C++, but it doesn't make use of the STL or of any additional library.
+
+It supports the following event notification mechanisms:
+	- epoll (edge-triggered) under Linux
+	- kqueue under FreeBSD
+	- port under Solaris
+	- poll
+	- select
+
+It has the following main features:
+	- HTTP/1.1
+	- Reverse proxy
+	- FastCGI
+	- Configurable via an XML file
+	- MIME types support
+	- Pipelining
+	- Virtual hosts
+	- Keep-Alive
+	- Directory listing (with optional footer file)
+	- Handling of the If-Modified-Since header
+	- HTTP ranges
+	- Logs
+	- Configurable access logs
+	- Log rotating
+
+
+CONFIGURATION
+-------------
+All the configuration is done through the file gweb++.xml, which has the following format:
+
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+	<general>
+		Here come general configuration parameters, like the address to bind to, the port
+		number, log file, log level, ...
+	</general>
+	<hosts>
+		<host-name-1>
+			Here come virtual host specific configuration parameters, like the document
+			root, whether the requests should be logged, ...
+		<host-name-1>
+		<host-name-2>
+			Here come virtual host specific configuration parameters, like the document
+			root, whether the requests should be logged, ...
+		<host-name-2>
+		...
+		<host-name-n>
+			Here come virtual host specific configuration parameters, like the document
+			root, whether the requests should be logged, ...
+		<host-name-n>
+	</hosts>
+</config>
+
+For the server to start, at least one virtual host has to be defined.
+
+Some of the general configuration parameters are inherited by the virtual hosts, making it possible
+to define them only once in the general section, reducing the complexity of the configuration file.
+These configuration parameters can be overridden by defining them in the hosts.
+
+
+Configuration of the 'general' section:
+- address: (optional) Address to bind to. If not defined, it will bind to all the interfaces (0.0.0.0).
+- port: (optional) Port to bind to. If not defined, it will bind to port 80.
+- max_idle_time (in seconds): (optional) How many seconds a connection can be idle before being closed
+  (default: 30 seconds, range: 1 - 3600 [1 hour]).
+- max_idle_time_unknown_size_body: (optional) How many seconds a connection retrieving an unknown size
+  body can be idle before being closed (default: 3 seconds, range: 1 - 3600 [1 hour]).
+  Some servers don't specify the Content-Length when sending the response and they don't close the
+  connection when all the data has been transferred, so there is no way to determine whether all the
+  data has been received.
+- max_payload_in_memory (in KB): (optional) Payloads above this limit will be saved to disk
+  (default: 4 KB, range: 0 - 64 KB).
+- payload_directory: (optional) Directory where the payload data will be stored (default: /tmp).
+- max_spare_files: (optional) Maximum number of spare files.
+  When a file containing payload data is not used anymore, its file descriptor is reused if there are less
+  than 'max_spare_files' files available for payload data (default: 32).
+- backend_retry_interval: (optional) When the connection to a backend fails, this is the minimum time
+  interval between retries (default: 300 seconds, range: 1 - 3600 [1 hour]).
+- log_level: (optional) There are four log levels:
+    a) error: only error conditions are logged
+    b) warning: warning messages are also logged
+    c) info: information messages are also logged
+    d) debug: debug messages are also logged. The debug messages allow you to follow the state of
+       each connection
+  (default: error)
+- error_log: (optional) Name of the error log file. If not specified, no logs will be generated.
+- error_log_max_file_size (in KB): (optional) Maximum size of the error log files. Above this limit,
+  files will be rotated (default: 1048576 KB [1 GB], range: 32 KB - 4194304 KB [4 GB]).
+- log_requests: (optional, inheritable) Should the requests be logged? Might have the values: "yes" and
+  "no". If set to "yes" the requests will be logged for those virtual hosts which haven't set
+  this parameter to "no". If set to "no", no requests will be logged. If left empty (undefined), the
+  requests will be logged for those virtual hosts which have this parameter set to "yes"
+  (default: undefined).
+- log_buffer_size (in KB): (optional, inheritable) Size of the log buffer. If set to 0, the requests will
+  be logged immediately. If set to some other value, they will be logged when the buffer size reaches this
+  value or after a maximum of 'log_sync_interval' seconds (default: 32 KB, range: 0 KB - 1024 KB [1 MB]).
+- log_sync_interval (in seconds): (optional) How often should the log buffers be flushed to disk?
+  (default: 30, range: 1 - 3600 [1 hour]).
+- access_log_max_file_size (in KB): (optional, inheritable) Maximum size of the access log files. Above this
+  limit, files will be rotated (default: 1048576 KB [1 GB], range: 32 KB - 4194304 KB [4 GB]).
+- log_format: (optional) Format of the log file. See section "Log format".
+- directory_listing: (optional, inheritable) Should a directory listing be generated for requests for
+  directories which don't contain an index file? Might have the values: "yes" and "no". If set to "yes"
+  a directory listing will be generated for those virtual hosts which haven't set this parameter to "no".
+  If set to "no", no directory listings will be generated. If left empty (undefined), a directory listing
+  will be generated for those virtual hosts which have this parameter set to "yes" (default: undefined).
+- directory_listing_footer: (optional, inheritable) Name of the file which contains the footer message
+  that will be added to the directory listings. If a virtual host doesn't override this parameter, the
+  general footer file will be used.
+- index_files: (optional) It defines the list of index files. If a request for a directory is received,
+  before checking whether directory listing is enabled for the virtual host, the web server checks whether
+  one of these files exist in the directory and, if so, the file is returned. The files are searched in
+  the order they appear in the configuration file.
+
+
+Configuration of the virtual hosts:
+- default: (optional) If a HTTP/1.0 request without Header field is received, the default virtual host 
+  (if any) will be used for serving the request. Only one default virtual host can be defined
+  (default: "no").
+- document_root: (mandatory) Directory from which the files will be served.
+- log_requests: (optional) Same meaning as in the general section.
+- access_log: (mandatory if the requests are to be logged) Name of the access log file.
+- log_buffer_size (in KB): (optional) Same meaning as in the general section.
+- access_log_max_file_size (in KB): (optional) Same meaning as in the general section.
+- log_format: (optional) Same meaning as in the general section.
+- directory_listing: (optional) Same meaning as in the general section.
+- directory_listing_footer: (optional) Same meaning as in the general section.
+- aliases: (optional) Here you can define additional names for the same virtual host.
+- request_handling: (optional) These section contains the rules. The rules are checked in the same order
+  as they appear in the file.
+  There are three handlers:
+    - fastcgi: requests matching the rule will be forwarded to a FastCGI server (e.g.: PHP).
+    - http: requests matching the rule will be forwared to a HTTP server (reverse proxy).
+    - local: requests no matching the above rules will be handled locally.
+  There are three criterion: path, method, file_extension
+  Values: here you specify the list of values, depending on the criterion.
+
+
+
+Log format:
+The default log format is:
+$remote_address - - [$timestamp] "$method $host$path HTTP/$http_version" $status_code $response_body_size
+
+The format might contain free text and variables. Variables start with '$' and are case-sensitive.
+
+The following variables can be used:
+  - PID: process identification of the web server
+  - connection_status: '+' for keep-alive requests, '-' for non keep-alive requests.
+  - host: name of the virtual host serving the request.
+  - http_version: HTTP version. Format: <major-number>.<minor-number>
+  - local_address: local IP.
+  - local_port: local port.
+  - method: HTTP method.
+  - path: path of the request.
+  - remote_address: IP of the client.
+  - remote_port: port of the client.
+  - request_header_size: size in bytes of the request's header.
+  - request_body_size: size in bytes of the request's body.
+  - response_header_size: size in bytes of the response's header.
+  - response_body_size: size in bytes of the response's body.
+  - scheme: so far only "http://".
+  - status_code: status code returned to the client.
+  - timestamp: timestamp of the request in GMT.
+  - user_agent: user agent of the client, '-' if not received.

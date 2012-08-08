@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+	<general>
+		<!-- Address to bind to (default: 0.0.0.0) -->
+		<address>0.0.0.0</address>
+
+		<!-- Port to bind to (default: 80) -->
+		<port>2000</port>
+
+		<!-- How long a connection can be idle (in seconds) (default: 30) -->
+		<max_idle_time>30</max_idle_time>
+
+		<!-- How long a connection retrieving an unknown size body can be idle
+		     (in seconds) (default: 3) -->
+		<max_idle_time_unknown_size_body>3</max_idle_time_unknown_size_body>
+
+		<!-- Payloads above this limit will be saved to disk (in KB) (default: 4) -->
+		<max_payload_in_memory>4</max_payload_in_memory>
+
+		<!-- Payload directory (default: /tmp) -->
+		<payload_directory>tmp</payload_directory>
+
+		<!-- Maximum number of spare files (default: 32) -->
+		<max_spare_files>32</max_spare_files>
+
+		<!-- When the connection to a backend fails, this is the minimum time interval between
+		     retries (in seconds) (default: 300) -->
+		<backend_retry_interval>300</backend_retry_interval>
+
+		<!-- Log level.
+		     Might have the values:
+		         "error"
+		         "warning"
+		         "info"
+		         "debug"
+		     (default: "error")
+		-->
+		<log_level>debug</log_level>
+
+		<!-- Path of the error log file (default: /dev/null) -->
+		<error_log>error_log</error_log>
+
+		<!-- Maximum size of the error log files (in KB) (default: 1 GB) -->
+		<error_log_max_file_size>1048576</error_log_max_file_size>
+
+		<!-- Should the requests be logged?
+		     Might have the values:
+		         "yes"
+		         "no"
+		     (default: undefined [virtual host value])
+		-->
+		<log_requests>yes</log_requests>
+
+		<!-- Size of the access log buffer (in KB) (default: 32 KB) -->
+		<log_buffer_size>32</log_buffer_size>
+
+		<!-- Log sync interval (in seconds) (default: 30) -->
+		<log_sync_interval>30</log_sync_interval>
+
+		<!-- Maximum size of the access log files (in KB) (default: 1 GB) -->
+		<access_log_max_file_size>1048576</access_log_max_file_size>
+
+		<log_format>$remote_address - - [$timestamp] "$method $host$path HTTP/$http_version" $status_code $response_body_size</log_format>
+
+		<!-- Should a directory listing be generated when a directory
+		     doesn't have an index file?
+		     Might have the values:
+		         "yes"
+		         "no"
+		     (default: undefined [virtual host value])
+		-->
+		<directory_listing>yes</directory_listing>
+
+		<!-- Footer file for the directory listing. -->
+		<directory_listing_footer>global_footer.txt</directory_listing_footer>
+
+		<!-- List of index file names. -->
+		<index_files>
+			index.html
+			index.htm
+			index.php
+		</index_files>
+	</general>
+	<hosts>
+		<www.test.com>
+			<!-- Default host?
+			     Might have the values:
+			         "yes"
+			         "no"
+			     (default: "no")
+			-->
+			<default>yes</default>
+
+			<!-- Directory from which the files will be served. -->
+			<document_root>/home/guido</document_root>
+
+			<log_requests>yes</log_requests>
+
+			<!-- Access log file. -->
+			<access_log>/home/guido/access_log</access_log>
+
+			<log_buffer_size>32</log_buffer_size>
+
+			<access_log_max_file_size>1048576</access_log_max_file_size>
+
+			<log_format>$remote_address - - [$timestamp] "$method $host$path HTTP/$http_version" $status_code $response_body_size</log_format>
+
+			<directory_listing>yes</directory_listing>
+
+			<directory_listing_footer></directory_listing_footer>
+
+			<!-- Alternate names for the host (separators are: '\n', ' ', ',', ';') -->
+			<aliases>
+				192.168.2.100, 127.0.0.1
+			</aliases>
+
+			<!-- List of rules, they are checked in the same order as they appear in the configuration file. -->
+			<request_handling>
+				<rule-0>
+					<handler>fastcgi</handler>
+					<criterion>file_extension</criterion>
+					<values>php, fcgi</values>
+					<backends>127.0.0.1:2001</backends>
+				</rule-0>
+				<rule-1>
+					<handler>http</handler>
+					<criterion>method</criterion>
+					<values>HEAD</values>
+					<backends>127.0.0.1:2002, 127.0.0.1:2003</backends>
+				</rule-1>
+				<rule-2>
+					<handler>fastcgi</handler>
+					<criterion>path</criterion>
+					<values>
+						/cgi-bin/
+						/fcgi/
+					</values>
+					<backends>192.168.0.2:2004, 192.168.0.100:2005</backends>
+				</rule-2>
+			</request_handling>
+		</www.test.com>
+	</hosts>
+</config>
