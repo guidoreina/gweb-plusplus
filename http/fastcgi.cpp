@@ -273,7 +273,7 @@ bool fastcgi::process(buffer& buf)
 			unsigned short requestId = (header->requestIdB1 << 8) | header->requestIdB0;
 
 			if (contentLength == sizeof(FCGI_EndRequestBody)) {
-				const FCGI_EndRequestBody* end = (const FCGI_EndRequestBody*) (const char*) header + sizeof(FCGI_Header);
+				const FCGI_EndRequestBody* end = (const FCGI_EndRequestBody*) ((const char*) header + sizeof(FCGI_Header));
 
 				unsigned appStatus = (end->appStatusB3 << 24) | (end->appStatusB2 << 16) | (end->appStatusB1 << 8) | end->appStatusB0;
 
