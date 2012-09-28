@@ -152,7 +152,9 @@ bool sock::writev(const socket_wrapper::io_vector* iov, int iovcnt, unsigned tim
 
 			while ((size_t) ret >= v->iov_len) {
 				ret -= v->iov_len;
+
 				v++;
+				iovcnt--;
 			}
 
 			if (ret > 0) {

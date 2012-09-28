@@ -177,7 +177,9 @@ bool file_wrapper::writev(int fd, const io_vector* iov, int iovcnt)
 
 			while ((size_t) ret >= v->iov_len) {
 				ret -= v->iov_len;
+
 				v++;
+				iovcnt--;
 			}
 
 			if (ret > 0) {
