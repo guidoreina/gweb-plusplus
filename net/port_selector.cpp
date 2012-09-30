@@ -62,6 +62,8 @@ bool selector::add(unsigned fd, int events, bool modifiable)
 
 	if (port_associate(_M_fd, PORT_SOURCE_FD, (uintptr_t) fd, events, NULL) < 0) {
 		logger::instance().perror("port_associate");
+
+		fdmap::remove(fd);
 		return false;
 	}
 

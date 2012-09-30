@@ -63,6 +63,8 @@ bool selector::add(unsigned fd, int events, bool modifiable)
 
 	if (epoll_ctl(_M_fd, EPOLL_CTL_ADD, fd, &ev) < 0) {
 		logger::instance().perror("epoll_ctl");
+
+		fdmap::remove(fd);
 		return false;
 	}
 

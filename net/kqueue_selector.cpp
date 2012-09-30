@@ -71,6 +71,8 @@ bool selector::add(unsigned fd, int events, bool modifiable)
 
 	if (kevent(_M_fd, ev, nevents, NULL, 0, &timeout) < 0) {
 		logger::instance().perror("kevent");
+
+		fdmap::remove(fd);
 		return false;
 	}
 
