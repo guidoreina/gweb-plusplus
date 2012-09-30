@@ -111,24 +111,30 @@ void selector::process_events(unsigned nevents)
 {
 	logger::instance().log(logger::LOG_DEBUG, "[selector::process_events] Processing %d events.", nevents);
 
-	for (size_t i = 0; (i < _M_used) && (nevents > 0); i++) {
+	size_t i = 0;
+	while ((i < _M_used) && (nevents > 0)) {
 		if (_M_events[i].revents != 0) {
+			nevents--;
+
 			unsigned fd = _M_events[i].fd;
 			if (_M_descriptors[fd] != -1) {
 				if ((_M_events[i].revents & POLLIN) || (_M_events[i].revents & POLLOUT)) {
 					if (!on_event(fd, _M_events[i].revents)) {
 						// Remove from set.
 						remove(fd);
+						continue;
 					}
 				} else {
 					on_event_error(fd);
 
 					// Remove from set.
 					remove(fd);
+
+					continue;
 				}
 			}
-
-			nevents--;
 		}
+
+		i++;
 	}
 }

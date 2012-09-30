@@ -124,16 +124,19 @@ void selector::process_events(const fd_set* rfds, const fd_set* wfds, unsigned n
 {
 	logger::instance().log(logger::LOG_DEBUG, "[selector::process_events] Processing %d events.", nevents);
 
-	for (size_t i = 0; (i < _M_used) && (nevents > 0); i++) {
+	size_t i = 0;
+	while ((i < _M_used) && (nevents > 0)) {
 		unsigned fd = _M_index[i];
 		int events = 0;
 
 		if (FD_ISSET(fd, rfds)) {
 			events |= READ;
+			nevents--;
 		}
 
 		if (FD_ISSET(fd, wfds)) {
 			events |= WRITE;
+			nevents--;
 		}
 
 		if (events) {
@@ -141,10 +144,11 @@ void selector::process_events(const fd_set* rfds, const fd_set* wfds, unsigned n
 				if (!on_event(fd, events)) {
 					// Remove from set.
 					remove(fd);
+					continue;
 				}
 			}
-
-			nevents--;
 		}
+
+		i++;
 	}
 }
