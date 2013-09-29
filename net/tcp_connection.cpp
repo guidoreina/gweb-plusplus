@@ -154,7 +154,7 @@ bool tcp_connection::writev(unsigned fd, const socket_wrapper::io_vector* io_vec
 	off_t outp = _M_outp;
 
 	unsigned i;
-	for (i = 0; (i < iovcnt) && (outp >= io_vector[i].iov_len); i++) {
+	for (i = 0; (i < iovcnt) && (outp >= (off_t) io_vector[i].iov_len); i++) {
 		outp -= io_vector[i].iov_len;
 	}
 
@@ -220,7 +220,7 @@ bool tcp_connection::sendfile(unsigned fd, unsigned in_fd, off_t filesize, const
 	}
 
 	if (_M_max_write > 0) {
-		count = MIN(count, _M_max_write - total);
+		count = MIN(count, (off_t) (_M_max_write - total));
 
 		// If we have sent too much already...
 		if (count == 0) {
@@ -271,7 +271,7 @@ bool tcp_connection::sendfile(unsigned fd, unsigned in_fd, off_t filesize, const
 
 		total += ret;
 
-		if ((size_t) ret < count) {
+		if ((off_t) ret < count) {
 			_M_writable = 0;
 		}
 	}

@@ -334,7 +334,7 @@ int access_log::search(const char* name, size_t len)
 
 bool access_log::flush()
 {
-	if (_M_size + _M_buf.count() > _M_max_size) {
+	if (_M_size + (off_t) _M_buf.count() > _M_max_size) {
 		if (!rotate()) {
 			_M_buf.reset();
 			return false;

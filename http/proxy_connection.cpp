@@ -126,7 +126,7 @@ bool proxy_connection::loop(unsigned fd)
 				} else {
 					_M_client->_M_timestamp = now::_M_time;
 
-					if (_M_outp == count) {
+					if (_M_outp == (off_t) count) {
 						if (_M_client->_M_payload_in_memory) {
 							if (!modify(fd, tcp_server::READ)) {
 								_M_client->_M_error = http_error::INTERNAL_SERVER_ERROR;
@@ -156,7 +156,7 @@ bool proxy_connection::loop(unsigned fd)
 				} else {
 					_M_client->_M_timestamp = now::_M_time;
 
-					if (_M_outp == _M_client->_M_request_body_size) {
+					if (_M_outp == (off_t) _M_client->_M_request_body_size) {
 						// We don't need the client's temporary file anymore.
 						static_cast<http_server*>(_M_server)->_M_tmpfiles.close(_M_client->_M_tmpfile);
 						_M_client->_M_tmpfile = -1;
@@ -360,7 +360,7 @@ bool proxy_connection::read_body(unsigned fd, size_t& total)
 
 		_M_client->_M_timestamp = now::_M_time;
 
-		size_t count = MIN(_M_left, _M_client->_M_body.count() - _M_inp);
+		size_t count = MIN(_M_left, (off_t) _M_client->_M_body.count() - _M_inp);
 
 		if (!_M_client->_M_payload_in_memory) {
 			if (!file_wrapper::write(_M_tmpfile, _M_client->_M_body.data(), count)) {
@@ -373,7 +373,7 @@ bool proxy_connection::read_body(unsigned fd, size_t& total)
 			_M_inp += count;
 		}
 
-		if (count == _M_left) {
+		if ((off_t) count == _M_left) {
 			_M_state = RESPONSE_COMPLETED_STATE;
 			return true;
 		}
@@ -451,7 +451,7 @@ proxy_connection::parse_result proxy_connection::parse_status_line(unsigned fd)
 	const char* data = _M_client->_M_body.data();
 	size_t len = _M_client->_M_body.count();
 
-	while (_M_inp < len) {
+	while (_M_inp < (off_t) len) {
 		unsigned char c = (unsigned char) data[_M_inp];
 		switch (_M_substate) {
 			case 0: // Initial state.
@@ -754,12 +754,12 @@ bool proxy_connection::process_response(unsigned fd)
 				logger::instance().log(logger::LOG_DEBUG, "[proxy_connection::process_response] (fd %d) Body size %lld.", fd, _M_client->_M_filesize);
 
 				// If we have received the whole body already...
-				if (count >= _M_client->_M_filesize) {
+				if ((off_t) count >= _M_client->_M_filesize) {
 					_M_client->_M_payload_in_memory = 1;
 
 					_M_state = RESPONSE_COMPLETED_STATE;
 				} else {
-					_M_client->_M_payload_in_memory = (_M_client->_M_filesize <= static_cast<http_server*>(_M_server)->_M_max_payload_in_memory);
+					_M_client->_M_payload_in_memory = (_M_client->_M_filesize <= (off_t) static_cast<http_server*>(_M_server)->_M_max_payload_in_memory);
 
 					_M_left = _M_client->_M_filesize - count;
 

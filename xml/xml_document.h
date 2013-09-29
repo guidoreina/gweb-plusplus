@@ -68,7 +68,7 @@ class xml_document : public xml_parser {
 		virtual bool to_string(buffer& buf, bool pretty_print, bool nul_terminate = true) const;
 
 	protected:
-		static const size_t MAX_FILE_SIZE;
+		static const off_t MAX_FILE_SIZE;
 
 		static const size_t NODE_ALLOC;
 

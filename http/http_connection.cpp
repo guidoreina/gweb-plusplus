@@ -161,7 +161,7 @@ bool http_connection::loop(unsigned fd)
 
 		switch (_M_state) {
 			case BEGIN_REQUEST_STATE:
-				if ((!_M_readable) && (_M_inp == _M_in.count())) {
+				if ((!_M_readable) && (_M_inp == (off_t) _M_in.count())) {
 					return true;
 				}
 
@@ -249,7 +249,7 @@ bool http_connection::loop(unsigned fd)
 
 				if (!writev(fd, io_vector, 2, total)) {
 					return false;
-				} else if (_M_outp == _M_out.count() + _M_bodyp->count()) {
+				} else if (_M_outp == (off_t) (_M_out.count() + _M_bodyp->count())) {
 					_M_state = REQUEST_COMPLETED_STATE;
 				}
 
@@ -261,7 +261,7 @@ bool http_connection::loop(unsigned fd)
 
 				if (!write(fd, total)) {
 					return false;
-				} else if (_M_outp == _M_out.count()) {
+				} else if (_M_outp == (off_t) _M_out.count()) {
 					if (_M_method == http_method::HEAD) {
 						_M_state = REQUEST_COMPLETED_STATE;
 					} else if (_M_error != http_error::OK) {
@@ -336,7 +336,7 @@ bool http_connection::loop(unsigned fd)
 
 				if (!write(fd, total)) {
 					return false;
-				} else if (_M_outp == _M_out.count()) {
+				} else if (_M_outp == (off_t) _M_out.count()) {
 					const range_list::range* range = _M_ranges.get(_M_nrange);
 					_M_outp = range->from;
 
@@ -351,7 +351,7 @@ bool http_connection::loop(unsigned fd)
 
 				if (!write(fd, total)) {
 					return false;
-				} else if (_M_outp == _M_out.count()) {
+				} else if (_M_outp == (off_t) _M_out.count()) {
 					socket_wrapper::uncork(fd);
 
 					_M_state = REQUEST_COMPLETED_STATE;
@@ -386,7 +386,7 @@ bool http_connection::loop(unsigned fd)
 
 				if (!ret) {
 					return false;
-				} else if (_M_outp == count) {
+				} else if (_M_outp == (off_t) count) {
 					if (_M_payload_in_memory) {
 						_M_state = REQUEST_COMPLETED_STATE;
 					} else {
@@ -452,7 +452,7 @@ bool http_connection::read_request_line(unsigned fd, size_t& total)
 	io_result res;
 
 	// If we had already processed the data in the input buffer...
-	if (_M_inp == _M_in.count()) {
+	if (_M_inp == (off_t) _M_in.count()) {
 		if ((res = read(fd, total)) == IO_ERROR) {
 			return false;
 		} else if (res == IO_NO_DATA_READ) {
@@ -527,7 +527,7 @@ bool http_connection::read_body(unsigned fd, size_t& total)
 			return true;
 		}
 
-		size_t count = MIN(_M_filesize, _M_in.count() - _M_inp);
+		size_t count = MIN(_M_filesize, (off_t) _M_in.count() - _M_inp);
 
 		if (!_M_payload_in_memory) {
 			if (_M_rule->handler == rulelist::HTTP_HANDLER) {
@@ -551,7 +551,7 @@ bool http_connection::read_body(unsigned fd, size_t& total)
 			}
 		}
 
-		if (count == _M_filesize) {
+		if ((off_t) count == _M_filesize) {
 			_M_inp += count;
 
 			_M_state = PREPARING_HTTP_REQUEST_STATE;
@@ -619,7 +619,7 @@ http_connection::parse_result http_connection::parse_request_line()
 	const char* data = _M_in.data();
 	size_t len = _M_in.count();
 
-	while (_M_inp < len) {
+	while (_M_inp < (off_t) len) {
 		unsigned char c = (unsigned char) data[_M_inp];
 		switch (_M_substate) {
 			case 0: // Initial state.
@@ -1292,7 +1292,7 @@ bool http_connection::process_non_local_handler(unsigned fd)
 			return true;
 		}
 
-		if (number::parse_unsigned(value, valuelen, _M_request_body_size) != number::PARSE_SUCCEEDED) {
+		if (number::parse_size_t(value, valuelen, _M_request_body_size) != number::PARSE_SUCCEEDED) {
 			_M_error = http_error::BAD_REQUEST;
 			return true;
 		}

@@ -135,7 +135,7 @@ bool logger::add(level level, const char* format, va_list ap)
 		return false;
 	}
 
-	if (_M_size + _M_buf.count() > _M_max_size) {
+	if (_M_size + (off_t) _M_buf.count() > _M_max_size) {
 		if (!rotate()) {
 			return false;
 		}

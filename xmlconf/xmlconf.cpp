@@ -42,6 +42,31 @@ bool xmlconf::get_value(unsigned& value, ...) const
 	return (number::parse_unsigned(v, l, value) == number::PARSE_SUCCEEDED);
 }
 
+#if _LP64
+bool xmlconf::get_value(size_t& value, ...) const
+{
+	va_list ap;
+	va_start(ap, value);
+
+	xml_document::iterator it;
+	if (!find_node(ap, it)) {
+		va_end(ap);
+		return false;
+	}
+
+	va_end(ap);
+
+	const char* v;
+	size_t l;
+
+	if (!get_value(it, v, l)) {
+		return false;
+	}
+
+	return (number::parse_size_t(v, l, value) == number::PARSE_SUCCEEDED);
+}
+#endif // _LP64
+
 bool xmlconf::get_value(bool& value, ...) const
 {
 	va_list ap;

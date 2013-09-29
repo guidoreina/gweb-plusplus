@@ -84,7 +84,7 @@ bool fcgi_connection::loop(unsigned fd)
 				} else {
 					_M_client->_M_timestamp = now::_M_time;
 
-					if (_M_outp == _M_out.count()) {
+					if (_M_outp == (off_t) _M_out.count()) {
 						if (_M_client->_M_payload_in_memory) {
 							if (!modify(fd, tcp_server::READ)) {
 								_M_client->_M_error = http_error::INTERNAL_SERVER_ERROR;

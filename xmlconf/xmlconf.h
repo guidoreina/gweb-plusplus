@@ -27,6 +27,11 @@ class xmlconf {
 		// Get value.
 		bool get_value(const char*& value, size_t& len, ...) const;
 		bool get_value(unsigned& value, ...) const;
+
+#if _LP64
+		bool get_value(size_t& value, ...) const;
+#endif
+
 		bool get_value(bool& value, ...) const;
 
 		// Get child.

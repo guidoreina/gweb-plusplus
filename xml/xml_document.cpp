@@ -4,7 +4,7 @@
 #include <new>
 #include "xml_document.h"
 
-const size_t xml_document::MAX_FILE_SIZE = 1 * 1024 * 1024;
+const off_t xml_document::MAX_FILE_SIZE = 1 * 1024 * 1024;
 const size_t xml_document::NODE_ALLOC = 100;
 
 xml_document::xml_document() : _M_buf(10 * 1024)
