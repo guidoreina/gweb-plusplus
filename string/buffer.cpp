@@ -37,7 +37,13 @@ bool buffer::vformat(const char* format, va_list ap)
 	int size = _M_size - _M_used;
 
 	do {
-		int n = vsnprintf(_M_data + _M_used, size, format, ap);
+		va_list aq;
+		va_copy(aq, ap);
+
+		int n = vsnprintf(_M_data + _M_used, size, format, aq);
+
+		va_end(aq);
+
 		if (n > -1) {
 			if (n < size) {
 				_M_used += n;
