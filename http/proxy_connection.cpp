@@ -582,16 +582,8 @@ proxy_connection::parse_result proxy_connection::parse_status_line(unsigned fd)
 
 					_M_substate = 12; // Reason phrase.
 				} else if (c == '\r') {
-					if (_M_status_code < 100) {
-						return PARSE_ERROR;
-					}
-
 					_M_substate = 13; // '\r' at the end of status line.
 				} else if (c == '\n') {
-					if (_M_status_code < 100) {
-						return PARSE_ERROR;
-					}
-
 					_M_inp++;
 
 					return PARSING_COMPLETED;
