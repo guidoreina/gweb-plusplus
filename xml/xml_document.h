@@ -1,6 +1,7 @@
 #ifndef XML_DOCUMENT_H
 #define XML_DOCUMENT_H
 
+#include <sys/types.h>
 #include "xml/xml_parser.h"
 #include "string/buffer.h"
 
