@@ -109,7 +109,7 @@ bool fastcgi::name_value_pairs::add(const char* name, unsigned short namelen, co
 		return false;
 	}
 
-	char* data = _M_out.data();
+	unsigned char* data = reinterpret_cast<unsigned char*>(_M_out.data());
 	size_t count = _M_out.count();
 
 	if (namelen <= 127) {
